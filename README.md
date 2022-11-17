@@ -206,54 +206,79 @@ print("Number of mislabeled points out of a total %d points : %d"%(X_test.shape[
 
 ///////////////////////////////////////////////////////P7////////////////////////////////////////////////////
 
-import numpy as np
+
+import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.datasets import load_iris
-from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+import numpy as np
 
-X,y=load_iris(return_X_y=True)
 
-X = X[:, np.newaxis, 2]
+df = pd.read_csv('FuelEconomy.csv')
+df.info()
+print(df.head(5))
+print(df.describe())
 
-# Split the data into training/testing sets
-X_train = X[:-75]
-X_test = X[-75:]
+plt.scatter(df.HP,df.MPG,color='blue')
+plt.title("FuelEconomy",size=20,color="red")
+plt.xlabel("Horse Power")
+plt.ylabel("Miles Per Gallon")
+plt.show()
 
-# Split the targets into training/testing sets
-y_train = y[:-75]
-y_test = y[-75:]
+
+X = df[['HP']]
+y = df[['MPG']]
+
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.33,random_state = 42)
 
 regr = LinearRegression()
+
+
 regr.fit(X_train,y_train)
-y_pred = regr.predict(X_test)
 
-print(y_pred)
-print(X_test.size)
-print(y_test.size)
+print("Coefficients : ",regr.coef_)
+print("Intercept : ",regr.intercept_)
+print("Singular : ",regr.singular_)
+print("Rank : ",regr.rank_)
 
-plt.scatter(X_test,y_test,color="black")
-plt.plot(X_test,y_pred, color="blue", linewidth=3)
-plt.show()
+
+test_y_cap = regr.predict(X_test)
+#np.mean(np.absolute(test_y_cap - y_test))
+
+msq = np.mean(np.power((test_y_cap - y_test),2),axis=0)
+
+print("Mean Square Error is {0}".format(msq))
+
+R2_score = r2_score(test_y_cap, y_test)
+
+print("R2 Score is {0}".format(R2_score))
+
+
+
+
+
+
 
 
 ////////////////////////////////////P8////////////////////////////////////////////////
 
 import pandas
 from sklearn import linear_model
+from sklearn.model_selection import train_test_split
 
 df = pandas.read_csv("data.csv")
 
 X = df[['Weight', 'Volume']]
 y = df['CO2']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.33,random_state = 42)
 
 regr = linear_model.LinearRegression()
-regr.fit(X, y)
+regr.fit(X_train, y_train)
 
 predictedCO2 = regr.predict([[2300, 1300]])
 
 print("Predicted CO2 for(weight:2300,Volume:1300): " , predictedCO2)
-
 print("Coefficient : " , regr.coef_)
 
 
