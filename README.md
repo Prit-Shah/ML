@@ -367,71 +367,49 @@ print(confusion_mat)
 /////////////////////////////////////////////P11//////////////////////////////////////////////
 
 
+
 import pandas as pd
-import numpy as np
-from sklearn.datasets import load_iris
-from sklearn import model_selection
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import r2_score
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 import matplotlib.pyplot as plt
-
-df = load_iris()
-X = df.data
-y = df.target
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.50, random_state=40)
-
-
-dtree = DecisionTreeRegressor(max_depth=8, min_samples_leaf=0.13, random_state=3)
-
-dtree.fit(X_train, y_train)
-
-pred_train_tree= dtree.predict(X_train)
-print(np.sqrt(mean_squared_error(y_train,pred_train_tree)))
-print(r2_score(y_train, pred_train_tree))
-
-# Code lines 4 to 6
-pred_test_tree= dtree.predict(X_test)
-print(np.sqrt(mean_squared_error(y_test,pred_test_tree))) 
-print(r2_score(y_test, pred_test_tree))
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import r2_score
+import numpy as np
 
 
-dtree1 = DecisionTreeRegressor(max_depth=2)
-dtree2 = DecisionTreeRegressor(max_depth=5)
-dtree1.fit(X_train, y_train)
-dtree2.fit(X_train, y_train)
+df = pd.read_csv('CO2 Emissions_Canada.csv')
+df.info()
+print(df.head(5))
+print(df.describe())
 
-# Code Lines 5 to 6: Predict on training data
-tr1 = dtree1.predict(X_train)
-tr2 = dtree2.predict(X_train) 
+X2 = df[['Fuel_Consumption_Comb']]
+X3 = df[['Fuel_Consumption_Comb_mpg']]
+y = df[['CO2_Emissions']]
 
-#Code Lines 7 to 8: Predict on testing data
-y1 = dtree1.predict(X_test)
-y2 = dtree2.predict(X_test) 
+poly_features = PolynomialFeatures(degree = 2)
+X = poly_features.fit_transform(X2,X3)
 
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.33,random_state = 42)
 
-print(np.sqrt(mean_squared_error(y_train,tr1))) 
-print(r2_score(y_train, tr1))
+regr = LinearRegression()
 
-# Print RMSE and R-squared value for regression tree 'dtree1' on testing data
-print(np.sqrt(mean_squared_error(y_test,y1))) 
-print(r2_score(y_test, y1)) 
+regr.fit(X_train,y_train)
 
+print("Coefficients : ",regr.coef_)
+print("Intercept : ",regr.intercept_)
+print("Singular : ",regr.singular_)
+print("Rank : ",regr.rank_)
 
-print(np.sqrt(mean_squared_error(y_train,tr2))) 
-print(r2_score(y_train, tr2))
+test_y_cap = regr.predict(X_test)
 
-# Print RMSE and R-squared value for regression tree 'dtree2' on testing data
-print(np.sqrt(mean_squared_error(y_test,y2))) 
-print(r2_score(y_test, y2))
+msq = np.mean(np.power((test_y_cap - y_test),2),axis=0)
 
-plt.scatter(y_test,tr2,color="black")
-plt.plot(y_test,tr2,color="blue")
-plt.show()
+print("Mean Square Error is {0}".format(msq))
+
+R2_score = r2_score(test_y_cap, y_test)
+
+print("R2 Score is {0}".format(R2_score))
+
 
 
 /////////////////////////////////////////P13///////////////////////////////////////////////
